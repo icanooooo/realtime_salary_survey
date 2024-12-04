@@ -1,10 +1,4 @@
-def get_input():
-    data = {}
-
-    data['id'] = '1'
-    data['message'] = input("Please send any messages: ")
-
-    return data
+import json
 
 def delivery_report(err, msg):
     if err is not None:
@@ -13,13 +7,11 @@ def delivery_report(err, msg):
         print(f"message delivered to {msg.topic}, [{msg.partition()}]")
 
 
-def send_message(topic, producer):
-    data = get_input()
-
+def send_message(data, topic, producer):
     producer.produce(
         topic,
-        key='1',
-        value=data['message'],
+        key=data['id'],
+        value=json.dumps(data),
         on_delivery=delivery_report
     )
 
