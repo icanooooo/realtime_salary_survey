@@ -7,8 +7,8 @@ services:
       POSTGRES_DB: salary_survey_db
       POSTGRES_USER: salary_survey
       POSTGRES_PASSWORD: secret
-    volumes:
-      - salary_survey_db_data:/var/lib/postgresql/data
+    # volumes:
+    #   - salary_survey_db_data:/var/lib/postgresql/data
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -52,13 +52,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # create_topic:
-  #   image: confluentinc/cp-kafka:7.4.0
-  #   container_name: create_topic
-  #   depends_on:
-  #     broker1:
-  #       condition: service_healthy
-  #   command: ["/bin/bash", "-c", "kafka-topics --create --topic test_event --bootstrap-server broker1:29092"]
+  create_topic:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: create_topic
+    depends_on:
+      broker1:
+        condition: service_healthy
+    command: ["/bin/bash", "-c", "kafka-topics --create --topic salary_survey --bootstrap-server broker1:29092"]
 
   spark-master:
     image: bitnami/spark:latest
