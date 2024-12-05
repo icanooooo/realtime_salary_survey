@@ -26,7 +26,7 @@ def get_input():
     data['JOB'] = input("Please insert your occupation")
     data['SALARY'] = get_numeric_input("Please insert your monthly salary in IDR: ") # Indonesian Rupiah
 
-    data['INPUT_TIME'] = datetime.now()
+    data['INPUT_TIME'] = str(datetime.now())
 
     return data
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     producer = Producer({"bootstrap.servers":"localhost:9092"}) # Input local machine port address
     
     data = get_input()
-    # send_message(data, "salary_survey", producer)
+    send_message(data, "salary_survey", producer)
     
     ensure_table_query = """
     CREATE TABLE IF NOT EXISTS users_salary (
