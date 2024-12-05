@@ -10,7 +10,7 @@ def delivery_report(err, msg):
 def send_message(data, topic, producer):
     producer.produce(
         topic,
-        key=data['id'],
+        key=data['ID'],
         value=json.dumps(data),
         on_delivery=delivery_report
     )

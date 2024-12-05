@@ -1,15 +1,9 @@
-from helper.postgres_helper import ensure_table
+from helper.postgres_helper import quick_command
 
 if __name__ == "__main__":
-    query = """
-    CREATE TABLE IF NOT EXISTS users_salary (
-        ID VARCHAR(50),
-        NAME VARCHAR(50),
-        AGE INT,
-        JOB VARCHAR(50),
-        SALARY DOUBLE PRECISION,
-        INPUT_TIME TIMESTAMP    
-    );
+    users_summary_query = """
+    CREATE TABLE IF NOT EXISTS users_summary (
+        POKEMON VARCHAR(50)
 """
 
-    conn = ensure_table(query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret")
+    quick_command(users_summary_query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret")

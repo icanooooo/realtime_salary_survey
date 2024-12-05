@@ -11,10 +11,10 @@ def create_connection(host, port, dbname, user, password):
 
     return conn
 
-def load_query(connection, query):
+def load_query(connection, query, vals=None):
     cursor = connection.cursor()
 
-    cursor.execute(query)
+    cursor.execute(query, vals)
 
     cursor.close()
 
@@ -27,10 +27,10 @@ def print_query(connection, query):
     cursor.close()
     return result
 
-def ensure_table(query, host, port, dbname, user, password):
+def quick_command(query, host, port, dbname, user, password, vals=None):
     conn = create_connection(host, port, dbname, user, password)
 
-    load_query(conn, query)
+    load_query(conn, query, vals)
 
     conn.commit()
     conn.close()
