@@ -1,8 +1,7 @@
-from helper.postgres_helper import quick_command
+from helper.postgres_helper import quick_command, ensure_table
 from helper.kafka_helper import send_message
 from datetime import datetime
 from confluent_kafka import Producer
-from helper.helper import ensure_table
 
 import random
 import requests
@@ -44,7 +43,7 @@ if __name__ == "__main__":
 
     insert_data = """
     INSERT INTO users_salary (ID, NAME, AGE, JOB, INDUSTRY, SALARY, INPUT_TIME)
-    VALUES (%s,%s,%s,%s,%s,%s)    
+    VALUES (%s,%s,%s,%s,%s,%s,%s)    
 """
 
     for i in range(100):

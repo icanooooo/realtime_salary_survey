@@ -1,8 +1,7 @@
-from confluent_kafka import Producer
+from confluent_kafka import Producer, ensure_table
 from datetime import datetime
 from helper.kafka_helper import send_message
 from helper.postgres_helper import quick_command
-from helper.helper import ensure_table
 
 # Program specific functions: 
 
