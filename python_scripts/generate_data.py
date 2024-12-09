@@ -2,6 +2,7 @@ from helper.postgres_helper import quick_command
 from helper.kafka_helper import send_message
 from datetime import datetime
 from confluent_kafka import Producer
+from helper.helper import ensure_table
 
 import random
 import requests
@@ -39,18 +40,7 @@ def generate_fake_data(n):
 if __name__ == "__main__":
     producer = Producer({"bootstrap.servers":"localhost:9092"}) # Input local machine port address
 
-    ensure_table_query = """
-    CREATE TABLE IF NOT EXISTS users_salary (
-        ID VARCHAR(50),
-        NAME VARCHAR(50),
-        AGE INT,
-        JOB VARCHAR(50),
-        INDUSTRY VARCHAR(50),
-        SALARY DOUBLE PRECISION,
-        INPUT_TIME TIMESTAMP    
-    );
-"""
-    quick_command(ensure_table_query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret")
+    ensure_table()
 
     insert_data = """
     INSERT INTO users_salary (ID, NAME, AGE, JOB, INDUSTRY, SALARY, INPUT_TIME)
