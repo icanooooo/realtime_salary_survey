@@ -23,7 +23,8 @@ def get_input():
     data['ID'] = input("Please input your id number: ")
     data['NAME'] = input("Please input your fullname: ")
     data['AGE'] = get_numeric_input("Please insert your age: ")
-    data['JOB'] = input("Please insert your occupation")
+    data['JOB'] = input("Please insert your occupation: ")
+    data['INDUSTRY'] = input("Please insert your industry sector: ")
     data['SALARY'] = get_numeric_input("Please insert your monthly salary in IDR: ") # Indonesian Rupiah
 
     data['INPUT_TIME'] = str(datetime.now())
@@ -42,16 +43,17 @@ if __name__ == "__main__":
         NAME VARCHAR(50),
         AGE INT,
         JOB VARCHAR(50),
+        INDUSTRY VARCHAR(50),
         SALARY DOUBLE PRECISION,
         INPUT_TIME TIMESTAMP    
     );
 """
     quick_command(ensure_table_query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret")
     
-    insert_to_postgres_query = """
-    INSERT INTO users_salary (ID, NAME, AGE, JOB, SALARY, INPUT_TIME)
+    insert_data = """
+    INSERT INTO users_salary (ID, NAME, AGE, JOB, INDUSTRY, SALARY, INPUT_TIME)
     VALUES (%s,%s,%s,%s,%s,%s)    
 """
-    quick_command(insert_to_postgres_query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret",
-                  (data['ID'], data['NAME'], data['AGE'], data['JOB'], data['SALARY'], data['INPUT_TIME']))
+    quick_command(insert_data, "localhost", "5432", "salary_survey_db", "salary_survey", "secret",
+                  (data['ID'], data['NAME'], data['AGE'], data['JOB'], data['INDUSTRY'], data['SALARY'], data['INPUT_TIME']))
     

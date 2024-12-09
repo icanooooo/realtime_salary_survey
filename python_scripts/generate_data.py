@@ -24,11 +24,13 @@ def generate_name():
 def generate_fake_data(n):
     data = {}
     jobs = ['Data Engineer', 'Account Executive', 'Content Writer', 'Software Engineer', 'Writer', 'Mathematician', 'Sales', 'Data Scientist', 'Trade Coordinator', 'Commercial Executive', 'Engineer (General)', 'Accountant', 'Consultant']
+    industry = ['Finance', 'Technology', 'Advertising', 'Trading', 'Logistics', 'Agriculture', 'Government', 'Construction', 'Oil & Gas', 'Consultancy']
 
     data['ID'] = str(n + 1000)
     data['NAME'] = generate_name()
     data['AGE'] = random.randint(20, 55)
     data['JOB'] = random.choice(jobs)
+    data['INDUSTRY'] = random.choice(industry)
     data['SALARY'] = random.uniform(1, 50) * 1000000 # Indonesian Rupiah
     data['INPUT_TIME'] = str(datetime.now())
 
@@ -43,6 +45,7 @@ if __name__ == "__main__":
         NAME VARCHAR(50),
         AGE INT,
         JOB VARCHAR(50),
+        INDUSTRY VARCHAR(50),
         SALARY DOUBLE PRECISION,
         INPUT_TIME TIMESTAMP    
     );
@@ -50,7 +53,7 @@ if __name__ == "__main__":
     quick_command(ensure_table_query, "localhost", "5432", "salary_survey_db", "salary_survey", "secret")
 
     insert_data = """
-    INSERT INTO users_salary (ID, NAME, AGE, JOB, SALARY, INPUT_TIME)
+    INSERT INTO users_salary (ID, NAME, AGE, JOB, INDUSTRY, SALARY, INPUT_TIME)
     VALUES (%s,%s,%s,%s,%s,%s)    
 """
 
@@ -58,7 +61,7 @@ if __name__ == "__main__":
         data = generate_fake_data(i)
 
         quick_command(insert_data, "localhost", "5432", "salary_survey_db", "salary_survey", "secret",
-                    (data['ID'], data['NAME'], data['AGE'], data['JOB'], data['SALARY'], data['INPUT_TIME']))
+                    (data['ID'], data['NAME'], data['AGE'], data['JOB'], data['INDUSTRY'], data['SALARY'], data['INPUT_TIME']))
         
         
         send_message(data, 'salary_survey', producer)
