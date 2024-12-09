@@ -1,7 +1,6 @@
 from helper.postgres_helper import create_connection
-from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import from_json, col
+from helper.spark_helper import get_raw_stream, raw_stream_processing, job_group_processing, industry_group_processing
 
 def create_tables(conn, curr):
     curr.execute("""
@@ -17,27 +16,6 @@ def create_tables(conn, curr):
     );""")
 
     conn.commit()
-
-def get_raw_stream(app_name, topic):
-    spark = SparkSession.builder \
-            .appName(app_name) \
-            .master("local[*]") \
-            .config("spark.jars.packages",
-                    "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0") \
-            .getOrCreate()
-    
-    kafka_broker = "localhost:9092"
-    kafka_topic = topic
-
-    raw_stream = spark.readStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", kafka_broker) \
-        .option("subscribe", kafka_topic) \
-        .option("startingOffsets", "earliest") \
-        .load()
-    
-    return raw_stream
-
 
 if __name__ == "__main__":
     conn = create_connection("localhost", "5432", "salary_survey_db", "salary_survey", "secret")
@@ -56,14 +34,6 @@ if __name__ == "__main__":
         StructField("SALARY", FloatType(), True),
         StructField("INPUT_TIME", TimestampType(), True)
     ])
-    
-    parsed_stream = raw_stream.selectExpr("CAST(value AS STRING)") \
-        .select(from_json(col("value"), schema).alias("data")) \
-        .select("data.*")
 
-    writeOut = parsed_stream.writeStream \
-            .outputMode("append") \
-            .format("console") \
-            .start()
-    
-    writeOut.awaitTermination()
+    industry_group_processing(raw_stream, schema)
+    job_group_processing(raw_stream, schema)
