@@ -51,7 +51,7 @@ def write_to_postgres(batch_df, batch_id):
         batch_df.write.jdbc(
             url=postgres_url,
             table="industry_earnings",
-            mode="overwrite",
+            mode="append",
             properties=postgres_properties
         )
 
