@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import from_json, col, avg, count
+from pyspark.sql.functions import from_json, col, avg, count, coalesce
 
 def get_raw_stream(app_name, topic):
     spark = SparkSession.builder \
@@ -20,7 +20,7 @@ def get_raw_stream(app_name, topic):
         .option("startingOffsets", "earliest") \
         .load()
     
-    return raw_stream
+    return raw_stream, spark
 
 def create_parsed_stream(rawstream, schema):
     parsed_stream = rawstream.selectExpr("CAST(value AS STRING)") \
@@ -39,7 +39,7 @@ def raw_stream_processing(rawstream, schema):
     
     writeOut.awaitTermination()
 
-def write_to_postgres(batch_df, batch_id):
+def write_to_postgres(batch_df, batch_id, session):
     try:
         postgres_url = "jdbc:postgresql://localhost:5432/salary_survey_db"
         postgres_properties = {
@@ -48,16 +48,48 @@ def write_to_postgres(batch_df, batch_id):
             "driver" : "org.postgresql.Driver"
         }
 
-        batch_df.write.jdbc(
+        existing_df = session.read.jdbc(
             url=postgres_url,
             table="industry_earnings",
-            mode="append",
+            properties=postgres_properties
+        )
+
+        merged_df = batch_df.alias("new").join(
+            existing_df.alias("existing"),
+            on="INDUSTRY",
+            how="outer"
+        ).select(
+            coalesce("new.INDUSTRY", "existing.INDUSTRY").alias("INDUSTRY"),
+            coalesce("new.ENTRY_COUNT", "existing.ENTRY_COUNT").alias("ENTRY_COUNT"),
+            coalesce("new.AVERAGE_SALARY", "existing.AVERAGE_SALARY").alias("AVERAGE_SALARY")
+        )
+        merged_df.show(truncate=False)
+
+        merged_df.write.jdbc(
+            url=postgres_url,
+            table="industry_earnings",
+            mode="overwrite",
             properties=postgres_properties
         )
 
         print(f"writing for batch {batch_id} succesfull!")
     except Exception as e:
         print(f"failed writing for {batch_id} due to: {e}")
+
+def industry_group_processing(rawstream, schema, spark):
+    parsed_stream = create_parsed_stream(rawstream, schema)
+
+    industry_group_df = parsed_stream.groupBy("INDUSTRY").agg(
+        count("ID").alias("ENTRY_COUNT"),
+        avg("SALARY").alias("AVERAGE_SALARY")
+        )
+
+    writeOut = industry_group_df.writeStream \
+            .foreachBatch(lambda batch_df, batch_id: write_to_postgres(batch_df, batch_id, spark)) \
+            .outputMode("update") \
+            .start()
+    
+    writeOut.awaitTermination()
 
 def job_group_processing(rawstream, schema):
     parsed_stream = create_parsed_stream(rawstream, schema)
@@ -68,21 +100,6 @@ def job_group_processing(rawstream, schema):
         )
 
     writeOut = job_group_df.writeStream \
-            .foreachBatch(write_to_postgres) \
-            .outputMode("update") \
-            .start()
-    
-    writeOut.awaitTermination()
-
-def industry_group_processing(rawstream, schema):
-    parsed_stream = create_parsed_stream(rawstream, schema)
-
-    industry_group_df = parsed_stream.groupBy("INDUSTRY").agg(
-        count("ID").alias("ENTRY_COUNT"),
-        avg("SALARY").alias("AVERAGE_SALARY")
-        )
-
-    writeOut = industry_group_df.writeStream \
             .foreachBatch(write_to_postgres) \
             .outputMode("update") \
             .start()

@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     create_tables(conn, curr)
 
-    raw_stream = get_raw_stream("salary_survey_users", "salary_survey")
+    raw_stream, spark = get_raw_stream("salary_survey_users", "salary_survey")
 
     schema = StructType([
         StructField("ID", StringType(), True),
@@ -36,4 +36,4 @@ if __name__ == "__main__":
         StructField("INPUT_TIME", TimestampType(), True)
     ])
 
-    industry_group_processing(raw_stream, schema)
+    industry_group_processing(raw_stream, schema, spark)
