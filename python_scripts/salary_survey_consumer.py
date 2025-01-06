@@ -11,7 +11,8 @@ def create_tables(conn, curr):
 
     curr.execute("""
     CREATE TABLE IF NOT EXISTS industry_earnings (
-        INDUSTRY_GROUP VARCHAR(50),
+        INDUSTRY VARCHAR(50),
+        ENTRY_COUNT INT,
         AVERAGE_SALARY FLOAT
     );""")
 
@@ -36,4 +37,3 @@ if __name__ == "__main__":
     ])
 
     industry_group_processing(raw_stream, schema)
-    job_group_processing(raw_stream, schema)
